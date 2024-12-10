@@ -1,10 +1,13 @@
 import kotlin.time.measureTime
 
-@JvmInline
-value class DiskBlock private constructor(private val id: Int) {
+//@JvmInline
+/*value*/ class DiskBlock private constructor(
+	public val id: Int,
+	public val size: Byte,
+) {
 	companion object {
-		fun file(fileId: Int) = DiskBlock(fileId)
-		val space = DiskBlock(-1)
+		fun file(fileId: Int, size: Byte) = DiskBlock(fileId, size)
+		val space = DiskBlock(-1, 1)
 	}
 
 	fun fileIdOrZero() = if (id == -1) 0 else id
@@ -34,7 +37,10 @@ fun loadHdd() {
 		val isFileElseSpace = inputIdx and 0x1 == 0x0
 		if (isFileElseSpace) {
 			val fileIdx = inputIdx shr 1
-			repeat(digit) { hdd[blockIdx++] = (DiskBlock.file(fileIdx)) }
+			val fileBlock = DiskBlock.file(fileIdx, digit.toByte());
+			repeat(digit) {
+				hdd[blockIdx++] = (fileBlock)
+			}
 		} else {
 			repeat(digit) { hdd[blockIdx++] = (DiskBlock.space) }
 		}

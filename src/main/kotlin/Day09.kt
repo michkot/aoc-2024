@@ -1,7 +1,7 @@
 import kotlin.time.measureTime
 
 //@JvmInline
-/*value*/ class DiskBlock private constructor(
+private /*value*/ class DiskBlock private constructor(
 	public val id: Int,
 	public val size: Byte,
 ) {
@@ -16,13 +16,13 @@ import kotlin.time.measureTime
 }
 
 //val inputFile = "Day09_sample";
-val inputFile = "Day09_input";
+private val inputFile = "Day09_input";
 
 // state:
-var hdd: Array<DiskBlock> = Array<DiskBlock>(0) { _ -> DiskBlock.space };
+private var hdd: Array<DiskBlock> = Array<DiskBlock>(0) { _ -> DiskBlock.space };
 
 // create hard drive from input
-fun loadHdd() {
+private fun loadHdd() {
 	var inputIdx = -1
 	val inputStr = readInput(inputFile)
 		.first();
@@ -50,7 +50,7 @@ fun loadHdd() {
 	hdd = hdd.copyOf(blockIdx) as Array<DiskBlock>;
 }
 
-fun moveBlocks() {
+private fun moveBlocks() {
 	val maxBlockId = hdd.lastIndex
 	var leftmostFreeBlockId = hdd.indexOf(DiskBlock.space)
 	fun findNewLeftmostSpace() {
@@ -71,7 +71,7 @@ fun moveBlocks() {
 	}
 }
 
-fun mainPart1() {
+private fun mainPart1() {
 
 	measureTime {
 		loadHdd()
@@ -93,7 +93,7 @@ fun mainPart1() {
 	// correct... use long :facepaln:, 6386640365805
 }
 
-fun moveBlocksNofrag() {
+private fun moveBlocksNofrag() {
 	val maxBlockId = hdd.lastIndex
 	var leftmostFreeBlockId = hdd.indexOf(DiskBlock.space)
 	fun findNewLeftmostSpace() {
@@ -147,7 +147,7 @@ fun moveBlocksNofrag() {
 	}
 }
 
-fun main() {
+private fun main() {
 	measureTime {
 		loadHdd()
 

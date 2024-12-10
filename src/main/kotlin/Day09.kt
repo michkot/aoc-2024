@@ -64,8 +64,11 @@ fun main() {
 
 		moveBlocks()
 
-		val checksum =
-			hdd.foldIndexed(0) { index, acc, diskBlock -> acc + (index * diskBlock.fileIdOrZero()) }
+		val checksum: Long =
+			hdd.foldIndexed(0L) { index, acc, diskBlock ->
+				acc + (index *
+					diskBlock.fileIdOrZero())
+			}
 
 		checksum.println();
 		"end".println()
@@ -73,3 +76,6 @@ fun main() {
 	}.println()
 
 }
+
+// wrong: too small: 23996653
+// correct... use long :facepaln:, 6386640365805

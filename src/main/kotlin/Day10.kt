@@ -32,16 +32,20 @@ private data class Coordinate private constructor(
 		this.vertical + direction.vertical,
 		this.horizontal + direction.horizontal,
 	)
+
+	override fun toString(): String {
+		return "${vertical}:${horizontal}"
+	}
 }
 
 private sealed class Direction(val vertical: Int, val horizontal: Int)
 
 private data object Up : Direction(-1, 0)
 private data object Down : Direction(1, 0)
-private data object Left : Direction(0, 1)
-private data object Right : Direction(0, -1)
+private data object Left : Direction(0, -1)
+private data object Right : Direction(0, 1)
 
-private val directions = arrayOf(Up, Down, Left, Right);
+private val directions = arrayOf(Up, Down, Right, Left);
 
 private fun main() {
 	measureTime {
@@ -69,23 +73,62 @@ private fun main() {
 			}
 		}
 
-		var sumOfScores: Long = 0L;
-		lines.forEachIndexed { ver, line ->
-			line.forEachIndexed { hor, number ->
-				if (isTrailHead(number)) {
-					val location =
-						Coordinate.createCoordinateOrNull(ver, hor)!!;
-					val reachablePeaks = HashSet<Coordinate>();
+		/** @return number of unique paths to peaks */
+		fun searchForPaths(
+			from: Coordinate,
+			currentLevel: Int,
+			path: List<Coordinate>,
+		): Long {
+			var pathsFound = 0L;
+			for (dir in directions) {
+				val newLocation = from.tryMove(dir);
+				if (newLocation == null) continue;
+				val newLevel = getLevelAt(newLocation);
+				if (newLevel != currentLevel + 1) continue;
 
-					searchForPeaks(location, number, reachablePeaks)
+				val newPath = path + newLocation;
+				if (newLevel == 9) {
+					pathsFound++;
+					continue;
+				}
+				pathsFound += searchForPaths(newLocation, newLevel, newPath);
+			}
+			return pathsFound;
+		}
 
-					val score = reachablePeaks.size;
-					sumOfScores += score;
+		fun doForAllTrailHeads(workForTrailHead: (location: Coordinate) -> Unit) {
+			lines.forEachIndexed { ver, line ->
+				line.forEachIndexed { hor, number ->
+					if (isTrailHead(number)) {
+						val location =
+							Coordinate.createCoordinateOrNull(ver, hor)!!;
+						workForTrailHead(location)
+					}
 				}
 			}
 		}
 
-		sumOfScores.println();
+		val part1 = false;
+		if (part1) {
+			var sumOfScores: Long = 0L;
+			val updateTotalScoreForTrailHead = fun(location: Coordinate) {
+				val reachablePeaks = HashSet<Coordinate>();
+
+				searchForPeaks(location, 0, reachablePeaks)
+				val score = reachablePeaks.size;
+				sumOfScores += score;
+			}
+			doForAllTrailHeads(updateTotalScoreForTrailHead)
+			sumOfScores.println();
+		} else {
+			var sumOfRating: Long = 0L;
+			val updateTotalScoreForTrailHead = fun(location: Coordinate) {
+				sumOfRating += searchForPaths(location, 0, listOf(location))
+			}
+			doForAllTrailHeads(updateTotalScoreForTrailHead)
+			sumOfRating.println();
+		}
+
 		"end".println()
 	}.println()
 }

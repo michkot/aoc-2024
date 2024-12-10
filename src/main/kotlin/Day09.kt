@@ -11,6 +11,8 @@ import kotlin.time.measureTime
 	}
 
 	fun fileIdOrZero() = if (id == -1) 0 else id
+
+	override fun toString() = "${id}:${size}";
 }
 
 //val inputFile = "Day09_sample";
@@ -52,7 +54,6 @@ fun moveBlocks() {
 	val maxBlockId = hdd.lastIndex
 	var leftmostFreeBlockId = hdd.indexOf(DiskBlock.space)
 	fun findNewLeftmostSpace() {
-		leftmostFreeBlockId++
 		leftmostFreeBlockId += hdd
 			.asSequence()
 			.drop(leftmostFreeBlockId)
@@ -65,11 +66,12 @@ fun moveBlocks() {
 
 		hdd[leftmostFreeBlockId] = hdd[currIdx]
 		hdd[currIdx] = DiskBlock.space
+		leftmostFreeBlockId++
 		findNewLeftmostSpace()
 	}
 }
 
-fun main() {
+fun mainPart1() {
 
 	measureTime {
 		loadHdd()
@@ -87,7 +89,80 @@ fun main() {
 
 	}.println()
 
+	// wrong: too small: 23996653
+	// correct... use long :facepaln:, 6386640365805
 }
 
-// wrong: too small: 23996653
-// correct... use long :facepaln:, 6386640365805
+fun moveBlocksNofrag() {
+	val maxBlockId = hdd.lastIndex
+	var leftmostFreeBlockId = hdd.indexOf(DiskBlock.space)
+	fun findNewLeftmostSpace() {
+		leftmostFreeBlockId += hdd
+			.asSequence()
+			.drop(leftmostFreeBlockId)
+			.indexOf(DiskBlock.space)
+	}
+
+	fun findLeftmostSpaceOfSize(size: Byte): Int? {
+		var cur = leftmostFreeBlockId;
+		while (true) {
+			val spaceSize = hdd
+				.asSequence()
+				.drop(cur)
+				.takeWhile { it == DiskBlock.space }
+				.count();
+
+			if (spaceSize >= size) return cur;
+			cur += spaceSize; // go past the space
+
+			val incrementToNextSpace = hdd
+				.asSequence()
+				.drop(cur)
+				.indexOf(DiskBlock.space);
+
+			if (incrementToNextSpace == -1) return null;
+			cur += incrementToNextSpace;
+		}
+	}
+
+	var currIdx = maxBlockId + 1
+	while (leftmostFreeBlockId < --currIdx) {
+		if (hdd[currIdx] == DiskBlock.space) continue
+
+		val sizeOfFile = hdd[currIdx].size;
+		val skipBlocks = sizeOfFile - 1;
+
+		val targetFirstBlock = findLeftmostSpaceOfSize(sizeOfFile);
+		if (targetFirstBlock == null || targetFirstBlock > currIdx) {
+			currIdx -= skipBlocks;
+			continue;
+		}
+
+		for (mvIdx in 0..<sizeOfFile) {
+			hdd[targetFirstBlock + mvIdx] = hdd[currIdx - mvIdx];
+			hdd[currIdx - mvIdx] = DiskBlock.space
+		}
+		currIdx -= skipBlocks;
+		findNewLeftmostSpace();
+	}
+}
+
+fun main() {
+	measureTime {
+		loadHdd()
+
+		moveBlocksNofrag()
+
+		val checksum: Long =
+			hdd.foldIndexed(0L) { index, acc, diskBlock ->
+				acc + (index *
+					diskBlock.fileIdOrZero())
+			}
+
+		checksum.println();
+		"end".println()
+	}.println()
+
+	// 6588821687846 too high
+	// 6423258376982 attempt 2
+}

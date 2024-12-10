@@ -14,25 +14,32 @@ value class DiskBlock private constructor(private val id: Int) {
 val inputFile = "Day09_input";
 
 // state:
-val hdd = ArrayList<DiskBlock>()
+var hdd: Array<DiskBlock> = Array<DiskBlock>(0) { _ -> DiskBlock.space };
 
 // create hard drive from input
 fun loadHdd() {
-	var currIdx = -1
-	val input = readInput(inputFile)
-		.first()
-		.asSequence()
+	var inputIdx = -1
+	val inputStr = readInput(inputFile)
+		.first();
+
+	var blockIdx = 0;
+	hdd = Array<DiskBlock>(/*maxsize*/inputStr.length * 9) { _ ->
+		DiskBlock.space
+	};
+
+	val input = inputStr.asSequence()
 		.map { it.code - '0'.code }
 	for (digit in input) {
-		currIdx++
-		val isFileElseSpace = currIdx and 0x1 == 0x0
+		inputIdx++
+		val isFileElseSpace = inputIdx and 0x1 == 0x0
 		if (isFileElseSpace) {
-			val currFileIdx = currIdx shr 1
-			repeat(digit) { hdd.add(DiskBlock.file(currFileIdx)) }
+			val fileIdx = inputIdx shr 1
+			repeat(digit) { hdd[blockIdx++] = (DiskBlock.file(fileIdx)) }
 		} else {
-			repeat(digit) { hdd.add(DiskBlock.space) }
+			repeat(digit) { hdd[blockIdx++] = (DiskBlock.space) }
 		}
 	}
+	hdd = hdd.copyOf(blockIdx) as Array<DiskBlock>;
 }
 
 fun moveBlocks() {
@@ -60,7 +67,6 @@ fun main() {
 
 	measureTime {
 		loadHdd()
-		hdd.trimToSize()
 
 		moveBlocks()
 
